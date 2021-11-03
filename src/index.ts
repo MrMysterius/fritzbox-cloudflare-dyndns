@@ -1,10 +1,13 @@
+import { PORT } from "./config";
 import express from "express";
-
-const PORT = 2525;
+import { getZoneID } from "./getZoneID";
 
 const app = express();
 
-app.get("/dyndns", (req, res) => {
+app.get("/dyndns", async (req, res) => {
+  const zone_id = await getZoneID(req.query.token as string, req.query.zone as string);
+  console.log(zone_id);
+
   return res.status(200).send("200: OK");
 });
 
