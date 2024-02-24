@@ -1,24 +1,48 @@
 import { PORT } from "./config";
 import express from "express";
 import { getRecordID } from "./getRecordID";
-import { getZoneID } from "./getZoneID";
+import { getZoneIDs } from "./getZoneIDs";
+import { parseQuery } from "./parseQuery";
 import { updateRecord } from "./updateRecord";
 
 const app = express();
 
-app.get("/dyndns", async (req, res) => {
+app.get("/dyndns", parseQuery, async (req, res) => {
   let date = new Date();
-  console.log(date.toISOString(), req.query);
-  const zone_id = await getZoneID(req.query.token as string, req.query.zone as string).catch((err) => console.log(err));
-  const record_id = await getRecordID(req.query.token as string, zone_id as string, `${req.query.record}.${req.query.zone}`).catch((err) => console.log(err));
-  await updateRecord(req.query.token as string, zone_id as string, record_id as string, req.query.ip4 as string, `${req.query.record}.${req.query.zone}`).catch(
-    (err) => console.log(err)
-  );
+  console.log(date.toISOString(), req.parsedQuery?.zones, req.parsedQuery?.records, req.parsedQuery?.ip4);
+
+  if (!req.parsedQuery) {
+    res.sendStatus(400);
+    return;
+  }
+
+  const zone_ids = (await getZoneIDs(req.parsedQuery.token, req.parsedQuery.zones).catch((err: Error) => console.log(err))) as string[];
+
+  for (let i = 0; i < zone_ids.length; i++) {
+    console.log(new Date().toISOString(), "UPDATING RECORD", `${req.parsedQuery.records[i]}.${req.parsedQuery.zones[i]}`);
+    const record_id = await getRecordID(req.parsedQuery.token, zone_ids[i], `${req.parsedQuery.records[i]}.${req.parsedQuery.zones[i]}`).catch((err) =>
+      console.log(err)
+    );
+
+    await updateRecord(
+      req.parsedQuery.token,
+      zone_ids[i],
+      record_id as string,
+      req.parsedQuery.ip4,
+      `${req.parsedQuery.records[i]}.${req.parsedQuery.zones[i]}`
+    ).catch((err) => console.log(err));
+
+    console.log(new Date().toISOString(), "UPDATED RECORD", `${req.parsedQuery.records[i]}.${req.parsedQuery.zones[i]}`);
+  }
+
   date = new Date();
-  console.log(date.toISOString(), req.query);
-  console.log(zone_id);
+  console.log(date.toISOString(), req.parsedQuery);
 
   return res.status(200).send("200: OK");
+});
+
+app.all("/*", (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  res.sendStatus(500);
 });
 
 app.listen(PORT, () => {

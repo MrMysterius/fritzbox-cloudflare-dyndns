@@ -2,7 +2,7 @@ import { API_HOST, API_PATH } from "./config";
 
 import https from "https";
 
-export async function updateRecord(token: string, zone_id: string, record_id: string, ip: string, name: string) {
+export async function updateRecord(token: string, zone_id: string, record_id: string, ip: string, name: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const connection = {
       host: API_HOST,
@@ -31,6 +31,7 @@ export async function updateRecord(token: string, zone_id: string, record_id: st
         // const updated = JSON.parse(data);
         // console.log(updated);
         // if (!updated) reject("No Zones");
+        resolve();
       });
     });
 

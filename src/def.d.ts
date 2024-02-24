@@ -4,6 +4,17 @@ declare namespace https {
   }
 }
 
+declare namespace Express {
+  interface Request {
+    parsedQuery?: {
+      token: string;
+      zones: string[];
+      records: string[];
+      ip4: string;
+    };
+  }
+}
+
 declare interface Zone {
   name: string;
   id: string;

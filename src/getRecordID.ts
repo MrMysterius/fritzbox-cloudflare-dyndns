@@ -2,7 +2,7 @@ import { API_HOST, API_PATH } from "./config";
 
 import https from "https";
 
-export async function getRecordID(token: string, zone_id: string, name: string) {
+export async function getRecordID(token: string, zone_id: string, name: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const connection = {
       host: API_HOST,

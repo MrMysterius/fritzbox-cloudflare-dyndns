@@ -2,7 +2,7 @@ import { API_HOST, API_PATH } from "./config";
 
 import https from "https";
 
-export async function getZoneID(token: string, zone_name: string) {
+export async function getZoneIDs(token: string, zones: string[]): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const connection = {
       host: API_HOST,
@@ -29,10 +29,10 @@ export async function getZoneID(token: string, zone_name: string) {
       });
 
       res.on("end", () => {
-        const zones = JSON.parse(data).result;
-        if (!zones) reject("No Zones");
+        const zonesRes = JSON.parse(data).result;
+        if (!zonesRes) reject("No Zones");
 
-        resolve(zones.find((zone: Zone) => zone.name == zone_name).id);
+        resolve(zonesRes.filter((zone: Zone) => zones.includes(zone.name)).map((zone: Zone) => zone.id));
       });
     });
   });
